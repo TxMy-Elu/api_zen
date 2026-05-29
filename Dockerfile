@@ -1,13 +1,13 @@
 # ── Étape 1 : Build ──────────────────────────────────────────────────────────
 # On utilise une image Maven avec JDK 21 pour compiler le projet
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 
 # On copie d'abord uniquement le pom.xml pour profiter du cache Docker :
 # si le pom ne change pas, Maven ne re-télécharge pas toutes les dépendances
 COPY pom.xml .
-RUN apt-get update && apt-get install -y maven && \
+RUN apk add --no-cache maven && \
     mvn dependency:go-offline -B
 
 # Ensuite on copie le code source et on compile
@@ -17,13 +17,13 @@ RUN mvn clean package -DskipTests -B
 
 # ── Étape 2 : Runtime ────────────────────────────────────────────────────────
 # Image finale beaucoup plus légère : juste le JRE (pas le compilateur)
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
 # Sécurité : on crée un utilisateur non-root dédié
 # Un conteneur qui tourne en root = risque majeur si compromis
-RUN groupadd --system cesizen && useradd --system --gid cesizen cesizen
+RUN addgroup -S cesizen && adduser -S -G cesizen cesizen
 
 # On copie uniquement le JAR compilé depuis l'étape builder
 COPY --from=builder /app/target/*.jar app.jar
