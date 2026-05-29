@@ -1,0 +1,24 @@
+[extend]
+# Utilise les règles par défaut de gitleaks
+useDefault = true
+
+# ── Allowlist globale — faux positifs connus ──────────────────────────────────
+[allowlist]
+description = "Faux positifs connus dans ce projet"
+
+regexes = [
+  # Placeholder JWT dans application.properties (valeur de dev non sensible)
+  "cesizen-secret-key-very-long-for-security-256-bits-minimum-required",
+  # Hash BCrypt dans data-init.sql (mot de passe de test 'password')
+  "\\$2a\\$10\\$dKOCtfFh",
+  # Adresse mail de dev
+  "cesizenrecover@gmail\\.com",
+]
+
+paths = [
+  # Fichier exemple — contient des placeholders intentionnels
+  ".env.example",
+  # Dépendances — on ne scanne pas node_modules
+  "node_modules",
+  "target",
+]
