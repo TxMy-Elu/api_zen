@@ -1,0 +1,35 @@
+# ── Override PROD ─────────────────────────────────────────────────────────────
+# Usage : docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Différences avec la base :
+#   - BD : cesizen_prod (données réelles, jamais écrasées par le dev)
+#   - MySQL NON exposé (inaccessible depuis l'extérieur)
+#   - phpMyAdmin ABSENT (surface d'attaque inutile en prod)
+#   - Prometheus NON exposé (métriques internes uniquement)
+#   - Profil Spring Boot = prod (Swagger désactivé, logs réduits)
+
+services:
+
+  db:
+    environment:
+      MYSQL_DATABASE: cesizen_prod
+    # Pas de ports : MySQL uniquement accessible via le réseau Docker interne
+
+  api:
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_NAME: cesizen_prod
+    # En prod, rebuild depuis l'image du registry plutôt que le Dockerfile local
+    # image: ghcr.io/ton-user/cesizen-api:latest
+    # build: {} # décommenter pour désactiver le build local
+
+  # Prometheus : pas de port exposé en prod (Grafana y accède en interne)
+  prometheus:
+    # Pas de ports exposés
+    ports: !reset []
+
+  # Grafana : accessible uniquement en interne ou via tunnel SSH
+  # Décommenter si tu veux l'exposer publiquement (avec un vrai mdp !)
+  # grafana:
+  #   ports:
+  #     - "3001:3000"
