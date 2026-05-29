@@ -11,13 +11,13 @@ regexes = [
   "cesizen-secret-key-very-long-for-security-256-bits-minimum-required",
   # Hash BCrypt dans data-init.sql (mot de passe de test 'password')
   "\\$2a\\$10\\$dKOCtfFh",
-  # Adresse mail de dev
-  "cesizenrecover@gmail\\.com",
 ]
 
 paths = [
   # Fichier exemple — contient des placeholders intentionnels
   ".env.example",
+  # Documentation — contient des tokens JWT d'exemple fictifs
+  "docs",
   # Dépendances — on ne scanne pas node_modules
   "node_modules",
   "target",
