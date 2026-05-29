@@ -135,7 +135,7 @@ jobs:
           exit-code: '1'           # Fail le CI si CRITICAL ou HIGH trouvé
           ignore-unfixed: true     # Ignore les CVE sans patch disponible
           severity: CRITICAL,HIGH
-          output: trivy-report.txt
+          # output supprimé pour voir les findings dans les logs CI
 
       - name: Publier le rapport Trivy
         uses: actions/upload-artifact@v4
