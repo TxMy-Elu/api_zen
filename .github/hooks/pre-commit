@@ -1,0 +1,37 @@
+#!/bin/sh
+# ── Pre-commit hook — détection de secrets ────────────────────────────────────
+# Installe ce hook : cp .github/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+echo "🔍 Scan des secrets avant commit..."
+
+# ── Patterns interdits dans les fichiers stagés ───────────────────────────────
+PATTERNS='(password|passwd|secret|api.key|token|private.key)\s*=\s*["\x27][^${\x27"]{8,}'
+
+FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$FILES" ]; then
+  exit 0
+fi
+
+FOUND=0
+for FILE in $FILES; do
+  # Ignore les fichiers de config exemple et les binaires
+  case "$FILE" in
+    *.example|*.md|*.toml|*.lock) continue ;;
+  esac
+
+  if git show ":$FILE" | grep -iEq "$PATTERNS" 2>/dev/null; then
+    echo "❌ Secret potentiel détecté dans : $FILE"
+    FOUND=1
+  fi
+done
+
+if [ "$FOUND" -eq 1 ]; then
+  echo ""
+  echo "💡 Conseil : utilise des variables d'environnement (\${MA_VAR}) plutôt que des valeurs en dur."
+  echo "   Pour forcer le commit quand même : git commit --no-verify"
+  exit 1
+fi
+
+echo "✅ Aucun secret détecté."
+exit 0
