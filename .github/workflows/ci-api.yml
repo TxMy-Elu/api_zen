@@ -67,9 +67,9 @@ jobs:
       - name: Analyse SonarCloud
         if: env.SONAR_TOKEN != ''
         run: |
-          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }} \
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }} \
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar \
+            -Dsonar.projectKey=TxMy-Elu_api_zen \
+            -Dsonar.organization=txmy-elu \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
         env:
