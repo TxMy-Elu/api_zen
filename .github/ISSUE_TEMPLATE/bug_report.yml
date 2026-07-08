@@ -1,0 +1,62 @@
+name: 🐛 Bug
+description: Signaler un dysfonctionnement de l'API CESIZen
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Que se passe-t-il ?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Étapes de reproduction
+      placeholder: |
+        1. POST /api/auth/login avec { ... }
+        2. ...
+        3. Observer ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportement attendu
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportement observé
+      description: Réponse HTTP, message d'erreur, extrait de log.
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environnement
+      options:
+        - Local (docker-compose)
+        - CI (GitHub Actions)
+        - Production
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Criticité
+      options:
+        - Bloquant (service indisponible / faille de sécurité)
+        - Majeur (fonctionnalité inutilisable)
+        - Mineur (contournement possible)
+        - Cosmétique
+    validations:
+      required: true
