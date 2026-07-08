@@ -134,11 +134,15 @@ jobs:
       - name: OWASP Dependency Check
         # Seuls tags publiés par l'action : 1.0.0 et 1.1.0
         uses: dependency-check/Dependency-Check_Action@1.1.0
+        env:
+          # L'action tourne dans un conteneur : le JAVA_HOME posé par setup-java
+          # pointe vers le runner hôte et n'existe pas dedans. Vidé => le script
+          # utilise le JDK du conteneur via le PATH.
+          JAVA_HOME: ""
         with:
           project: api_zen
           path: .
           format: ALL
-          out: reports
           args: >
             --enableRetired
             --failOnCVSS 7
