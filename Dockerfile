@@ -1,6 +1,6 @@
 # ── Étape 1 : Build ──────────────────────────────────────────────────────────
 # On utilise une image Maven avec JDK 21 pour compiler le projet
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN mvn clean package -DskipTests -B
 
 # ── Étape 2 : Runtime ────────────────────────────────────────────────────────
 # Image finale beaucoup plus légère : juste le JRE (pas le compilateur)
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 WORKDIR /app
 
