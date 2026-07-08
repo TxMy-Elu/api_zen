@@ -37,6 +37,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Extraire les métadonnées Docker
         id: meta
         uses: docker/metadata-action@v5
