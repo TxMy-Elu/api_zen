@@ -48,7 +48,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: trivy-image.sarif
@@ -69,11 +69,13 @@ jobs:
           scan-ref: .
           format: sarif
           output: trivy-fs.sarif
-          scanners: secret,misconfig,vuln
+          # vuln exclu : résoudre les JARs Maven déclenche un rate-limit 429
+          # sur Maven Central. Les CVE Java sont couvertes par le job trivy-image.
+          scanners: secret,misconfig
 
       - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        if: always() && hashFiles('trivy-fs.sarif') != ''
         with:
           sarif_file: trivy-fs.sarif
 
