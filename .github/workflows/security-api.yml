@@ -29,7 +29,7 @@ jobs:
         run: docker build -t cesizen-api:scan .
 
       - name: Trivy scan — CRITICAL & HIGH (bloquant)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: cesizen-api:scan
           format: table
@@ -38,7 +38,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Trivy scan — SARIF (GitHub Security tab)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         if: always()
         with:
           image-ref: cesizen-api:scan
@@ -63,7 +63,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
