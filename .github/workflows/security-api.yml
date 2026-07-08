@@ -94,6 +94,14 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_REPORT_FORMAT: sarif
+          GITLEAKS_REPORT_PATH: gitleaks-report.sarif
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: gitleaks-report.sarif
 
   # ── OWASP Dependency Check — base NVD (scan approfondi) ────────────────────
   owasp-dependency-check:
@@ -124,7 +132,7 @@ jobs:
           MAIL_ENABLED: "false"
 
       - name: OWASP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@main
+        uses: dependency-check/Dependency-Check_Action@v12.2.2
         with:
           project: api_zen
           path: .

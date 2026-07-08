@@ -70,6 +70,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment: production
+    permissions:
+      contents: read
+      packages: read
     # Mettre PROD_ENABLED = true dans Settings → Variables quand le VPS est prêt
     if: vars.PROD_ENABLED == 'true'
 
