@@ -1,0 +1,51 @@
+# ── Override DEV — chargé automatiquement par Docker Compose ──────────────────
+# Ne pas commiter de valeurs sensibles ici.
+# Usage : docker compose up -d  (override.yml chargé automatiquement)
+
+services:
+
+  nginx:
+    ports:
+      - "8080:80"
+
+  api:
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_NAME: cesizen_dev
+      MAIL_ENABLED: "false"
+      MAIL_HOST: mailer
+      MAIL_PORT: "1025"
+
+  db:
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: cesizen_dev
+
+  # ── phpMyAdmin — accès BDD en dev ──────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: cesizen_pma
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - cesizen-net
+
+  # ── Mailpit — capture emails en dev (pas d'envoi réel) ─────────────────────
+  mailer:
+    image: axllent/mailpit:latest
+    container_name: cesizen_mailer
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Interface web
+    networks:
+      - cesizen-net

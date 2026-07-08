@@ -1,0 +1,446 @@
+{
+  "title": "CESIZen — Monitoring Complet",
+  "uid": "cesizen-full",
+  "schemaVersion": 38,
+  "version": 5,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "label": "Prometheus",
+        "hide": 0,
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": { "selected": true, "text": "Prometheus", "value": "Prometheus" }
+      },
+      {
+        "name": "loki_datasource",
+        "type": "datasource",
+        "query": "loki",
+        "label": "Loki",
+        "hide": 0,
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": { "selected": true, "text": "Loki", "value": "Loki" }
+      }
+    ]
+  },
+  "panels": [
+
+    { "id": 100, "type": "row", "title": "📊 Vue d'ensemble", "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }, "collapsed": false },
+
+    {
+      "id": 1, "title": "Statut API", "type": "stat",
+      "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "up{job=\"cesizen-api\"}", "legendFormat": "API" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "auto" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      }
+    },
+    {
+      "id": 2, "title": "Requêtes / min", "type": "stat",
+      "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{application=\"api_zen\"}[5m])) * 60", "legendFormat": "req/min" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } } }
+    },
+    {
+      "id": 3, "title": "Taux d'erreur", "type": "stat",
+      "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{application=\"api_zen\",status=~\"[45]..\"}[5m])) / sum(rate(http_server_requests_seconds_count{application=\"api_zen\"}[5m])) * 100", "legendFormat": "erreurs %" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "decimals": 2,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 5 }] }
+        }
+      }
+    },
+    {
+      "id": 4, "title": "Latence p95", "type": "stat",
+      "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=\"api_zen\"}[5m])) by (le))", "legendFormat": "p95" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s", "decimals": 3,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 0.5 }, { "color": "red", "value": 1 }] }
+        }
+      }
+    },
+    {
+      "id": 5, "title": "Heap JVM utilisé", "type": "stat",
+      "gridPos": { "x": 16, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "sum(jvm_memory_used_bytes{application=\"api_zen\",area=\"heap\"}) / sum(jvm_memory_max_bytes{application=\"api_zen\",area=\"heap\"}) * 100", "legendFormat": "heap %" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "decimals": 1,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 70 }, { "color": "red", "value": 90 }] }
+        }
+      }
+    },
+    {
+      "id": 6, "title": "Connexions BDD actives", "type": "stat",
+      "gridPos": { "x": 20, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "hikaricp_connections_active{application=\"api_zen\"}", "legendFormat": "actives" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 5 }, { "color": "red", "value": 8 }] }
+        }
+      }
+    },
+
+    { "id": 101, "type": "row", "title": "🌐 HTTP — Requêtes API", "gridPos": { "x": 0, "y": 5, "w": 24, "h": 1 }, "collapsed": false },
+
+    {
+      "id": 7, "title": "Requêtes / sec par endpoint", "type": "timeseries",
+      "gridPos": { "x": 0, "y": 6, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{application=\"api_zen\"}[1m])) by (uri, method)", "legendFormat": "{{method}} {{uri}}" }],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 8, "title": "Temps de réponse (p50 / p95 / p99)", "type": "timeseries",
+      "gridPos": { "x": 12, "y": 6, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket{application=\"api_zen\"}[1m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=\"api_zen\"}[1m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=\"api_zen\"}[1m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 9, "title": "Codes HTTP", "type": "piechart",
+      "gridPos": { "x": 0, "y": 14, "w": 6, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "sum(increase(http_server_requests_seconds_count{application=\"api_zen\"}[1h])) by (status)", "legendFormat": "HTTP {{status}}" }],
+      "options": { "pieType": "donut", "legendDisplayMode": "table", "legendPlacement": "right" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 10, "title": "Erreurs 4xx / 5xx", "type": "timeseries",
+      "gridPos": { "x": 6, "y": 14, "w": 10, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(http_server_requests_seconds_count{application=\"api_zen\",status=~\"4..\"}[1m]))", "legendFormat": "4xx" },
+        { "expr": "sum(rate(http_server_requests_seconds_count{application=\"api_zen\",status=~\"5..\"}[1m]))", "legendFormat": "5xx" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "4xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byName", "options": "5xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      }
+    },
+    {
+      "id": 11, "title": "Endpoints les plus lents (moyenne)", "type": "table",
+      "gridPos": { "x": 16, "y": 14, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{
+        "expr": "topk(10, sum(rate(http_server_requests_seconds_sum{application=\"api_zen\"}[5m])) by (uri, method) / sum(rate(http_server_requests_seconds_count{application=\"api_zen\"}[5m])) by (uri, method))",
+        "legendFormat": "{{method}} {{uri}}",
+        "instant": true
+      }],
+      "options": { "sortBy": [{ "displayName": "Value", "desc": true }] },
+      "fieldConfig": { "defaults": { "unit": "s", "decimals": 3 } }
+    },
+
+    { "id": 102, "type": "row", "title": "☕ JVM — Machine Virtuelle Java", "gridPos": { "x": 0, "y": 22, "w": 24, "h": 1 }, "collapsed": false },
+
+    {
+      "id": 12, "title": "Mémoire Heap (used / committed / max)", "type": "timeseries",
+      "gridPos": { "x": 0, "y": 23, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(jvm_memory_used_bytes{application=\"api_zen\",area=\"heap\"})", "legendFormat": "Utilisée" },
+        { "expr": "sum(jvm_memory_committed_bytes{application=\"api_zen\",area=\"heap\"})", "legendFormat": "Allouée" },
+        { "expr": "sum(jvm_memory_max_bytes{application=\"api_zen\",area=\"heap\"})", "legendFormat": "Max" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "lineWidth": 2, "fillOpacity": 10 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 13, "title": "Mémoire Non-Heap (Metaspace, CodeCache…)", "type": "timeseries",
+      "gridPos": { "x": 8, "y": 23, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "jvm_memory_used_bytes{application=\"api_zen\",area=\"nonheap\"}", "legendFormat": "{{id}}" },
+        { "expr": "jvm_memory_committed_bytes{application=\"api_zen\",area=\"nonheap\"}", "legendFormat": "{{id}} committed" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 14, "title": "CPU (Process + Système)", "type": "timeseries",
+      "gridPos": { "x": 16, "y": 23, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "process_cpu_usage{application=\"api_zen\"}", "legendFormat": "CPU Process" },
+        { "expr": "system_cpu_usage{application=\"api_zen\"}", "legendFormat": "CPU Système" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "custom": { "lineWidth": 2, "fillOpacity": 10 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 15, "title": "Threads JVM", "type": "timeseries",
+      "gridPos": { "x": 0, "y": 31, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "jvm_threads_live_threads{application=\"api_zen\"}", "legendFormat": "Live" },
+        { "expr": "jvm_threads_daemon_threads{application=\"api_zen\"}", "legendFormat": "Daemon" },
+        { "expr": "jvm_threads_peak_threads{application=\"api_zen\"}", "legendFormat": "Peak" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 16, "title": "GC — Pause (durée)", "type": "timeseries",
+      "gridPos": { "x": 8, "y": 31, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "rate(jvm_gc_pause_seconds_sum{application=\"api_zen\"}[1m])", "legendFormat": "{{action}} — {{cause}}" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 17, "title": "Classes chargées", "type": "timeseries",
+      "gridPos": { "x": 16, "y": 31, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "jvm_classes_loaded_classes{application=\"api_zen\"}", "legendFormat": "Chargées" },
+        { "expr": "rate(jvm_classes_unloaded_classes_total{application=\"api_zen\"}[1m])", "legendFormat": "Déchargées/s" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+
+    { "id": 103, "type": "row", "title": "🗄️ HikariCP — Pool de connexions BDD", "gridPos": { "x": 0, "y": 39, "w": 24, "h": 1 }, "collapsed": false },
+
+    {
+      "id": 18, "title": "Pool — État des connexions", "type": "timeseries",
+      "gridPos": { "x": 0, "y": 40, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "hikaricp_connections_active{application=\"api_zen\"}", "legendFormat": "Actives" },
+        { "expr": "hikaricp_connections_idle{application=\"api_zen\"}", "legendFormat": "Inactives" },
+        { "expr": "hikaricp_connections_pending{application=\"api_zen\"}", "legendFormat": "En attente" },
+        { "expr": "hikaricp_connections_max{application=\"api_zen\"}", "legendFormat": "Max" },
+        { "expr": "hikaricp_connections_min{application=\"api_zen\"}", "legendFormat": "Min" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 5 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 19, "title": "Pool — Temps d'acquisition", "type": "timeseries",
+      "gridPos": { "x": 8, "y": 40, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(hikaricp_connection_acquired_nanos_bucket{application=\"api_zen\"}[1m])) by (le)) / 1e6", "legendFormat": "Acquisition p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(hikaricp_connection_acquired_nanos_bucket{application=\"api_zen\"}[1m])) by (le)) / 1e6", "legendFormat": "Acquisition p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 20, "title": "Pool — Timeouts et créations", "type": "timeseries",
+      "gridPos": { "x": 16, "y": 40, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "rate(hikaricp_connections_timeout_total{application=\"api_zen\"}[1m])", "legendFormat": "Timeouts/s" },
+        { "expr": "hikaricp_connections{application=\"api_zen\"}", "legendFormat": "Total connexions" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+
+    { "id": 104, "type": "row", "title": "🖥️ Système — Serveur hôte", "gridPos": { "x": 0, "y": 48, "w": 24, "h": 1 }, "collapsed": false },
+
+    {
+      "id": 21, "title": "CPU Système (%)", "type": "timeseries",
+      "gridPos": { "x": 0, "y": 49, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)", "legendFormat": "CPU utilisé %" },
+        { "expr": "avg(rate(node_cpu_seconds_total{mode=\"iowait\"}[1m])) * 100", "legendFormat": "I/O wait %" },
+        { "expr": "avg(rate(node_cpu_seconds_total{mode=\"steal\"}[1m])) * 100", "legendFormat": "Steal %" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "custom": { "lineWidth": 2, "fillOpacity": 10 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 22, "title": "Load Average (1m / 5m / 15m)", "type": "timeseries",
+      "gridPos": { "x": 8, "y": 49, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "node_load1", "legendFormat": "1m" },
+        { "expr": "node_load5", "legendFormat": "5m" },
+        { "expr": "node_load15", "legendFormat": "15m" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 23, "title": "RAM (utilisée / cache / libre)", "type": "timeseries",
+      "gridPos": { "x": 16, "y": 49, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes", "legendFormat": "Utilisée" },
+        { "expr": "node_memory_Cached_bytes", "legendFormat": "Cache" },
+        { "expr": "node_memory_MemFree_bytes", "legendFormat": "Libre" },
+        { "expr": "node_memory_MemTotal_bytes", "legendFormat": "Total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "lineWidth": 2, "fillOpacity": 5 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 24, "title": "Disque — Utilisation (%)", "type": "bargauge",
+      "gridPos": { "x": 0, "y": 57, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [{ "expr": "100 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\"} * 100)", "legendFormat": "{{mountpoint}}", "instant": true }],
+      "options": { "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"] }, "displayMode": "gradient" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 70 }, { "color": "red", "value": 90 }] }
+        }
+      }
+    },
+    {
+      "id": 25, "title": "Disque — I/O (lecture / écriture)", "type": "timeseries",
+      "gridPos": { "x": 8, "y": 57, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(node_disk_read_bytes_total[1m]))", "legendFormat": "Lecture" },
+        { "expr": "sum(rate(node_disk_written_bytes_total[1m]))", "legendFormat": "Écriture" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "lineWidth": 2, "fillOpacity": 10 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 26, "title": "Réseau — Trafic (entrée / sortie)", "type": "timeseries",
+      "gridPos": { "x": 16, "y": 57, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(node_network_receive_bytes_total{device!~\"lo\"}[1m]))", "legendFormat": "Entrant" },
+        { "expr": "sum(rate(node_network_transmit_bytes_total{device!~\"lo\"}[1m]))", "legendFormat": "Sortant" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "lineWidth": 2, "fillOpacity": 10 }, "color": { "mode": "palette-classic" } } }
+    },
+
+    { "id": 105, "type": "row", "title": "🐬 MySQL — Base de données", "gridPos": { "x": 0, "y": 65, "w": 24, "h": 1 }, "collapsed": false },
+
+    {
+      "id": 27, "title": "Requêtes / sec (QPS)", "type": "timeseries",
+      "gridPos": { "x": 0, "y": 66, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "rate(mysql_global_status_queries[1m])", "legendFormat": "Queries/s" },
+        { "expr": "rate(mysql_global_status_questions[1m])", "legendFormat": "Questions/s" },
+        { "expr": "rate(mysql_global_status_slow_queries[1m])", "legendFormat": "Slow queries/s" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 28, "title": "Connexions", "type": "timeseries",
+      "gridPos": { "x": 8, "y": 66, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "mysql_global_status_threads_connected", "legendFormat": "Connectées" },
+        { "expr": "mysql_global_status_threads_running", "legendFormat": "Actives" },
+        { "expr": "mysql_global_variables_max_connections", "legendFormat": "Max autorisées" },
+        { "expr": "rate(mysql_global_status_connection_errors_total[1m])", "legendFormat": "Erreurs/s" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 29, "title": "InnoDB — Buffer Pool", "type": "timeseries",
+      "gridPos": { "x": 16, "y": 66, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "mysql_global_status_innodb_buffer_pool_bytes_data", "legendFormat": "Données" },
+        { "expr": "mysql_global_variables_innodb_buffer_pool_size", "legendFormat": "Taille totale" },
+        { "expr": "rate(mysql_global_status_innodb_buffer_pool_reads[1m])", "legendFormat": "Lectures disque/s (miss)" },
+        { "expr": "rate(mysql_global_status_innodb_buffer_pool_read_requests[1m])", "legendFormat": "Lectures totales/s" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 30, "title": "Opérations sur les lignes", "type": "timeseries",
+      "gridPos": { "x": 0, "y": 74, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "rate(mysql_global_status_innodb_rows_read[1m])", "legendFormat": "Lues/s" },
+        { "expr": "rate(mysql_global_status_innodb_rows_inserted[1m])", "legendFormat": "Insérées/s" },
+        { "expr": "rate(mysql_global_status_innodb_rows_updated[1m])", "legendFormat": "Mises à jour/s" },
+        { "expr": "rate(mysql_global_status_innodb_rows_deleted[1m])", "legendFormat": "Supprimées/s" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 31, "title": "Tables locks & temp tables", "type": "timeseries",
+      "gridPos": { "x": 8, "y": 74, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "rate(mysql_global_status_table_locks_waited[1m])", "legendFormat": "Locks attendus/s" },
+        { "expr": "rate(mysql_global_status_table_locks_immediate[1m])", "legendFormat": "Locks immédiats/s" },
+        { "expr": "rate(mysql_global_status_created_tmp_tables[1m])", "legendFormat": "Temp tables/s" },
+        { "expr": "rate(mysql_global_status_created_tmp_disk_tables[1m])", "legendFormat": "Temp disk tables/s" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "id": 32, "title": "Réseau MySQL (entrée / sortie)", "type": "timeseries",
+      "gridPos": { "x": 16, "y": 74, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "rate(mysql_global_status_bytes_received[1m])", "legendFormat": "Reçus" },
+        { "expr": "rate(mysql_global_status_bytes_sent[1m])", "legendFormat": "Envoyés" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "lineWidth": 2, "fillOpacity": 10 }, "color": { "mode": "palette-classic" } } }
+    },
+
+    { "id": 106, "type": "row", "title": "📋 Logs — Conteneurs Docker", "gridPos": { "x": 0, "y": 82, "w": 24, "h": 1 }, "collapsed": false },
+
+    {
+      "id": 33, "title": "Logs API Spring Boot", "type": "logs",
+      "gridPos": { "x": 0, "y": 83, "w": 24, "h": 10 },
+      "datasource": { "type": "loki", "uid": "${loki_datasource}" },
+      "targets": [{ "expr": "{container=\"cesizen_api\"}", "legendFormat": "" }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none",
+        "enableLogDetails": true
+      }
+    },
+    {
+      "id": 34, "title": "Logs MySQL", "type": "logs",
+      "gridPos": { "x": 0, "y": 93, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "${loki_datasource}" },
+      "targets": [{ "expr": "{container=\"cesizen_db\"}", "legendFormat": "" }],
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true }
+    },
+    {
+      "id": 35, "title": "Logs Nginx", "type": "logs",
+      "gridPos": { "x": 12, "y": 93, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "${loki_datasource}" },
+      "targets": [{ "expr": "{container=\"cesizen_nginx\"}", "legendFormat": "" }],
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true }
+    }
+
+  ]
+}
