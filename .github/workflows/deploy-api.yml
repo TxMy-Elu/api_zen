@@ -1,16 +1,13 @@
 name: CD — deploy api_zen
 
-# Déclenchement manuel uniquement (pas de VPS configuré pour l'instant)
-# À activer quand le serveur de production sera prêt :
-#   - Remplacer workflow_dispatch par workflow_run (voir commentaire ci-dessous)
-#   - Renseigner les secrets DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_PATH
-#
-# on:
-#   workflow_run:
-#     workflows: ["CI — api_zen"]
-#     types: [completed]
-#     branches: [main]
 on:
+  # Déclenchement automatique après CI réussie sur main
+  workflow_run:
+    workflows: ["CI — api_zen"]
+    types: [completed]
+    branches: [main]
+
+  # Déclenchement manuel (tag ou sha spécifique)
   workflow_dispatch:
     inputs:
       image_tag:
@@ -20,12 +17,14 @@ on:
 
 jobs:
 
-  deploy:
-    name: Build, Push GHCR & Deploy
+  build-push:
+    name: Build & Push GHCR
     runs-on: ubuntu-latest
-    # Retirer la condition ci-dessous quand on passe en workflow_run automatique
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    environment: production   # Gate manuel optionnel (configurable dans GitHub Environments)
+    # Pour workflow_run : ne démarre que si la CI a réussi
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
 
     steps:
       - name: Checkout
@@ -45,7 +44,7 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=raw,value=latest
-            type=sha,prefix=
+            type=sha,prefix=sha-
 
       - name: Build & Push image vers GHCR
         uses: docker/build-push-action@v5
@@ -57,7 +56,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+    needs: build-push
+    environment: production
+    # Déploiement uniquement si le secret DEPLOY_HOST est configuré
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+
+    steps:
       - name: Déploiement sur VPS via SSH
+        if: env.DEPLOY_HOST != ''
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -66,7 +76,11 @@ jobs:
           script: |
             cd ${{ secrets.DEPLOY_PATH }}
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            TAG=${{ github.event.inputs.image_tag || 'latest' }}
+            TAG=${{ needs.build-push.outputs.image_tag }}
             IMAGE_TAG=$TAG docker compose -f docker-compose.yml -f docker-compose.prod.yml pull api
             IMAGE_TAG=$TAG docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-build
             docker image prune -f
+
+      - name: Pas de VPS configuré — déploiement ignoré
+        if: env.DEPLOY_HOST == ''
+        run: echo "DEPLOY_HOST non configuré — image poussée sur GHCR, déploiement SSH ignoré."
