@@ -1,0 +1,140 @@
+name: Security — CVE & OWASP
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Scan automatique chaque nuit à 2h UTC
+    - cron: "0 2 * * *"
+
+permissions:
+  contents: read
+  security-events: write   # requis pour upload-sarif (Trivy → GitHub Security tab)
+  actions: read
+
+jobs:
+
+  # ── Trivy — Scan CVE de l'image Docker ─────────────────────────────────────
+  trivy-image:
+    name: Trivy — Docker image CVE scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image for scanning
+        run: docker build -t cesizen-api:scan .
+
+      - name: Trivy scan — CRITICAL & HIGH (bloquant)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: cesizen-api:scan
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Trivy scan — SARIF (GitHub Security tab)
+        uses: aquasecurity/trivy-action@master
+        if: always()
+        with:
+          image-ref: cesizen-api:scan
+          format: sarif
+          output: trivy-image.sarif
+          severity: CRITICAL,HIGH,MEDIUM
+          ignore-unfixed: true
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-image.sarif
+
+  # ── Trivy — Scan du code source (secrets, misconfigs) ──────────────────────
+  trivy-code:
+    name: Trivy — Code & secrets scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-fs.sarif
+          scanners: secret,misconfig,vuln
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-fs.sarif
+
+  # ── Gitleaks — Détection de secrets dans l'historique git ──────────────────
+  gitleaks:
+    name: Gitleaks — Secret detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── OWASP Dependency Check — base NVD (scan approfondi) ────────────────────
+  owasp-dependency-check:
+    name: OWASP Dependency Check
+    runs-on: ubuntu-latest
+    # NVD = téléchargement lourd (5-15 min) — Trivy couvre les CVE sur chaque PR
+    if: github.event_name == 'schedule' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build (sans tests) pour générer les JARs
+        run: mvn package -DskipTests -B
+        env:
+          DB_HOST: localhost
+          DB_NAME: cesizen_dev
+          DB_USERNAME: unused
+          DB_PASSWORD: unused
+          JWT_SECRET: unused_for_build_only
+          MAIL_ENABLED: "false"
+
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: api_zen
+          path: .
+          format: ALL
+          args: >
+            --enableRetired
+            --failOnCVSS 7
+
+      - name: Upload rapport
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owasp-dependency-check-report
+          path: reports/
+          retention-days: 30
