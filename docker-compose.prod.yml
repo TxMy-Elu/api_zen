@@ -27,6 +27,8 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: cesizen_prod
+    volumes:
+      - ./docker/mysql/01-restrict-user.sh:/docker-entrypoint-initdb.d/01-restrict-user.sh:ro
     # MySQL non exposé en prod — accessible uniquement via le réseau Docker interne
     ports: !reset []
 

@@ -125,6 +125,13 @@
             <version>3.0.2</version>
         </dependency>
 
+        <!-- Rate limiting -->
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-core</artifactId>
+            <version>8.10.1</version>
+        </dependency>
+
         <!-- Monitoring : Spring Boot Actuator + Micrometer Prometheus -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
