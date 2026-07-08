@@ -47,7 +47,11 @@ public class PasswordResetService {
 
         tokenDao.save(resetToken);
 
-        emailService.sendPasswordResetEmail(user.getEmail(), token);
+        try {
+            emailService.sendPasswordResetEmail(user.getEmail(), token);
+        } catch (RuntimeException e) {
+            log.warn("Token de réinitialisation créé mais email non envoyé pour {}", user.getEmail(), e);
+        }
     }
 
     @Transactional

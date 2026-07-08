@@ -1,35 +1,35 @@
 # ── Override PROD ─────────────────────────────────────────────────────────────
 # Usage : docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-#
-# Différences avec la base :
-#   - BD : cesizen_prod (données réelles, jamais écrasées par le dev)
-#   - MySQL NON exposé (inaccessible depuis l'extérieur)
-#   - phpMyAdmin ABSENT (surface d'attaque inutile en prod)
-#   - Prometheus NON exposé (métriques internes uniquement)
-#   - Profil Spring Boot = prod (Swagger désactivé, logs réduits)
 
 services:
 
-  db:
-    environment:
-      MYSQL_DATABASE: cesizen_prod
-    # Pas de ports : MySQL uniquement accessible via le réseau Docker interne
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot-www:/var/www/certbot:ro
+      - certbot-certs:/etc/letsencrypt:ro
+    restart: always
 
   api:
+    # En prod : image publiée par le pipeline CD (pas de build local)
+    image: ghcr.io/${GITHUB_REPOSITORY:-txmy-elu/api_zen}:${IMAGE_TAG:-latest}
+    build: !reset {}
+    restart: always
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      DB_NAME: cesizen_prod
-    # En prod, rebuild depuis l'image du registry plutôt que le Dockerfile local
-    # image: ghcr.io/ton-user/cesizen-api:latest
-    # build: {} # décommenter pour désactiver le build local
+      MYSQL_DATABASE: cesizen_prod
+      MAIL_ENABLED: "true"
 
-  # Prometheus : pas de port exposé en prod (Grafana y accède en interne)
-  prometheus:
-    # Pas de ports exposés
+  db:
+    restart: always
+    environment:
+      MYSQL_DATABASE: cesizen_prod
+    # MySQL non exposé en prod — accessible uniquement via le réseau Docker interne
     ports: !reset []
 
-  # Grafana : accessible uniquement en interne ou via tunnel SSH
-  # Décommenter si tu veux l'exposer publiquement (avec un vrai mdp !)
-  # grafana:
-  #   ports:
-  #     - "3001:3000"
+volumes:
+  certbot-www:
+  certbot-certs:

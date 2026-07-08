@@ -41,7 +41,10 @@ public class RestExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = ex.getFieldErrors().stream()
-                .collect(Collectors.toMap(fe -> fe.getField(), fe -> fe.getDefaultMessage()));
+                .collect(Collectors.toMap(
+                        fe -> fe.getField(),
+                        fe -> fe.getDefaultMessage(),
+                        (msg1, msg2) -> msg1 + "; " + msg2));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 }
