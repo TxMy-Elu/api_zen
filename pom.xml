@@ -30,6 +30,9 @@
         <java.version>21</java.version>
         <!-- Force Tomcat 11.0.22 pour corriger les CVE CRITICAL/HIGH -->
         <tomcat.version>11.0.22</tomcat.version>
+        <!-- Force Jackson 3.1.4 — patch CVE-2026-54512 / CVE-2026-54513 -->
+        <jackson-bom.version>2.21.4</jackson-bom.version>
+        <tools-jackson-bom.version>3.1.4</tools-jackson-bom.version>
     </properties>
     <dependencies>
         <dependency>

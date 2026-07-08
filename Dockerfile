@@ -23,7 +23,8 @@ WORKDIR /app
 
 # Sécurité : on crée un utilisateur non-root dédié
 # Un conteneur qui tourne en root = risque majeur si compromis
-RUN addgroup -S cesizen && adduser -S -G cesizen cesizen
+RUN apk upgrade --no-cache && \
+    addgroup -S cesizen && adduser -S -G cesizen cesizen
 
 # On copie uniquement le JAR compilé depuis l'étape builder
 COPY --from=builder /app/target/*.jar app.jar
