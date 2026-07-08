@@ -21,6 +21,8 @@ jobs:
   build:
     name: Build & Test (Java 21)
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     services:
       mysql:
@@ -63,7 +65,7 @@ jobs:
           MAIL_ENABLED: "false"
 
       - name: Analyse SonarCloud
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+        if: env.SONAR_TOKEN != ''
         run: |
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }} \
@@ -71,7 +73,6 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publier les résultats de tests
