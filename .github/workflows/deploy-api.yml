@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: 'Tag image à déployer (ex: latest, sha-abc1234)'
+        description: 'Tag image à déployer (ex: latest, abc1234)'
         required: false
         default: 'latest'
 

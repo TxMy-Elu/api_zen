@@ -132,11 +132,13 @@ jobs:
           MAIL_ENABLED: "false"
 
       - name: OWASP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@v12.2.2
+        # Seuls tags publiés par l'action : 1.0.0 et 1.1.0
+        uses: dependency-check/Dependency-Check_Action@1.1.0
         with:
           project: api_zen
           path: .
           format: ALL
+          out: reports
           args: >
             --enableRetired
             --failOnCVSS 7
