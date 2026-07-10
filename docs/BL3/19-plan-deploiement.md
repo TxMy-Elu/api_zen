@@ -24,6 +24,8 @@ Ce document décrit la gestion du code source, l'intégration continue (CI) et l
 
 - **Convention de commits.** Conventional Commits (`feat:`, `fix:`, `chore:`, `ci:`, `docs:`). Tags SemVer (`v1.0.0`).
 - **Protection de main.** Ruleset GitHub : PR obligatoire, interdiction de force-push et de suppression, checks requis (build/tests + scans) avant merge.
+- **Versionnement et releases.** Chaque livraison sur `main` est taguée en SemVer (`git tag -a vX.Y.Z`). Le tag `v1.0.0` a été créé et poussé. La CI se déclenche également sur les tags `v*.*.*`.
+  *Écart identifié : la création automatique d'une **GitHub Release** à chaque tag (avec notes de version et artefacts attachés) n'est pas encore en place. À ajouter via un workflow déclenché sur `push: tags`.*
 
 ---
 
@@ -57,22 +59,46 @@ La CI produit un **APK release** signé avec la clé debug, publié comme artefa
 
 ## 5. Environnements
 
-| Paramètre | Développement | Production |
-|---|---|---|
-| Déclenchement | Manuel (local) | Push sur `main` |
-| API | Docker local (`localhost:8080`) | Image GHCR (déploiement gated) |
-| Web | `pnpm dev` (`localhost:3000`) | Vercel |
-| Mobile | Émulateur (`10.0.2.2:8080`) | APK distribué |
-| Base de données | MySQL Docker | MySQL — user à droits minimaux |
-| Swagger | Activé | Désactivé |
-| Logs | DEBUG | WARN |
-| HTTPS | Non (HTTP local) | Oui (HSTS) |
+Deux environnements sont mis en œuvre : **développement** (local) et **production**. Un environnement de **recette (staging)** est conçu mais non déployé, faute d'infrastructure d'hébergement.
 
-**Variables d'environnement.** Aucun secret commité. Valeurs sensibles dans : `.env` local (gitignoré), **secrets GitHub Actions** (BDD, JWT, token Vercel), **secrets Dependabot** (coffre distinct), **variables Vercel** (clés publiques Supabase, URL API).
+| Paramètre | Développement | Staging *(conçu, non déployé)* | Production |
+|---|---|---|---|
+| Déclenchement | Manuel (local) | Push sur `develop` | Push sur `main` |
+| API | Docker local (`localhost:8080`) | Instance dédiée | Image GHCR (déploiement gated) |
+| Web | `pnpm dev` (`localhost:3000`) | Preview Vercel | Vercel |
+| Mobile | Émulateur (`10.0.2.2:8080`) | APK de test | APK distribué |
+| Base de données | MySQL Docker (`cesizen_dev`) | Base séparée | MySQL `cesizen_prod` — user à droits minimaux |
+| Swagger | Activé | Activé | Désactivé |
+| Logs | DEBUG | INFO | WARN |
+| HTTPS | Non (HTTP local) | Oui | Oui (HSTS) |
+| Données | Jeux de test | Fictives | Réelles |
+
+**Profils Spring.** La bascule s'opère par la variable `SPRING_PROFILES_ACTIVE` : `application-dev.properties` (logs verbeux, Swagger actif) et `application-prod.properties` (logs réduits, Swagger désactivé, `ddl-auto=validate`).
+
+**Variables d'environnement.** Aucun secret commité. Valeurs sensibles dans : `.env` local (gitignoré), **secrets GitHub Actions** (BDD, JWT, token Vercel), **secrets Dependabot** (coffre distinct — Dependabot n'a pas accès à ceux d'Actions), **variables Vercel** (clés publiques Supabase, URL API).
 
 ---
 
-## 6. Procédure de mise en production
+## 6. Supervision du déploiement
+
+La stack de supervision accompagne la mise en production et permet de valider le bon fonctionnement après déploiement.
+
+| Composant | Rôle | Port |
+|---|---|---|
+| Spring Boot Actuator | Expose `/actuator/health` et `/actuator/prometheus` | interne |
+| Prometheus | Collecte des métriques (scrape 15 s) | 9090 (interne) |
+| Grafana | Tableaux de bord (JVM, HikariCP, Tomcat, HTTP) | 3001 |
+| Loki + Promtail | Agrégation des journaux | 3100 (interne) |
+
+**Métriques suivies.** Débit HTTP, latence p50/p95/p99, taux d'erreur, pool de connexions BDD (HikariCP), threads Tomcat, mémoire JVM.
+
+**Limite et action recommandée.** Cette stack tourne sur le même hôte que l'API : si le serveur tombe, la supervision tombe avec lui. Une **sonde externe** (UptimeRobot ou équivalent) interrogeant `/actuator/health` depuis Internet, avec alerte e-mail, est nécessaire pour détecter une indisponibilité totale.
+
+> *À joindre au dossier : captures d'écran du tableau de bord Grafana et de la page d'état de la sonde externe.*
+
+---
+
+## 7. Procédure de mise en production
 
 1. Ouvrir une pull request `develop → main`.
 2. Attendre les checks verts (build, tests, scans de sécurité).
@@ -83,6 +109,6 @@ La CI produit un **APK release** signé avec la clé debug, publié comme artefa
 
 ---
 
-## 7. Conclusion
+## 8. Conclusion
 
 La chaîne de livraison est automatisée de bout en bout et homogène sur les trois applications : CI systématique, protection de la branche de production, déploiement piloté par des déclencheurs explicites. Principe directeur : aucun secret dans le code, aucun déploiement non maîtrisé.

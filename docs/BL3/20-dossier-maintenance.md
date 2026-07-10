@@ -63,13 +63,53 @@ Sources ciblées : **spring.io/blog** et GitHub Releases (backend), **nextjs.org
 
 ## 7. Types de maintenance et engagements
 
-| Type | Périmètre | Engagement indicatif |
-|---|---|---|
-| Préventive | MàJ hebdomadaires (Dependabot), revue des logs, scans nocturnes | Continue |
-| Corrective | Bugs introduits par les développements CESIZen | Critique < 24 h · Majeur < 72 h · Mineur : prochaine release |
-| Évolutive | Nouvelles fonctionnalités via issue + PR + revue | Priorisation par milestone |
+### 7.1 Maintenance préventive
 
-**Hors périmètre corrective** : pannes de l'hébergeur, failles de composants tiers non patchés en amont, indisponibilités de services externes (Vercel, Supabase).
+Anticiper les défaillances avant qu'elles ne surviennent. **Incluse** dans le forfait de maintenance.
+
+- Mises à jour hebdomadaires des dépendances (Dependabot) sur les trois dépôts.
+- Scans de sécurité nocturnes (Trivy, Gitleaks, OWASP Dependency Check).
+- Revue mensuelle des journaux de connexion à la recherche d'anomalies.
+- Vérification de la disponibilité via la sonde externe.
+- Audit SonarCloud trimestriel.
+
+### 7.2 Maintenance corrective
+
+Correction des anomalies constatées.
+
+| Criticité | Définition | Délai de prise en charge (SLA) | Délai de résolution visé |
+|---|---|---|---|
+| Bloquante | Service indisponible ou faille de sécurité exploitable | 4 heures ouvrées | 24 heures |
+| Majeure | Fonctionnalité inutilisable, sans contournement | 1 jour ouvré | 72 heures |
+| Mineure | Anomalie avec contournement possible | 3 jours ouvrés | Prochaine version |
+| Cosmétique | Défaut d'affichage sans impact fonctionnel | — | Selon disponibilité |
+
+**Dans le périmètre** : bugs introduits par les développements réalisés sur CESIZen.
+
+**Hors périmètre** : pannes de l'hébergeur, failles de composants tiers non encore corrigées en amont, indisponibilités de services externes (Vercel, Supabase), et toute anomalie causée par une modification effectuée par le client.
+
+### 7.3 Maintenance évolutive
+
+Ajout de fonctionnalités ou adaptation à un nouveau besoin. **Facturée au temps passé**, hors forfait.
+
+| Élément | Valeur indicative |
+|---|---|
+| Tarif journalier moyen (TJM) — développeur | 450 € HT / jour |
+| Tarif journalier moyen (TJM) — chef de projet | 600 € HT / jour |
+| Unité de facturation minimale | 0,5 jour |
+| Forfait de maintenance préventive + corrective | 350 € HT / mois |
+
+**Mode de contractualisation.**
+
+1. Le besoin est formalisé par une **issue GitHub** (modèle « Fonctionnalité »), avec ses critères d'acceptation.
+2. Un **chiffrage** en jours-homme est produit et soumis au client.
+3. Après validation écrite (bon de commande), la tâche est affectée à une **milestone**.
+4. La livraison suit le processus standard : branche dédiée → pull request → CI verte → revue → merge → déploiement.
+5. La recette est prononcée par le client sur la base des critères d'acceptation de l'issue.
+
+Le contrat de maintenance est conclu pour une durée de **12 mois**, reconductible tacitement, résiliable avec un préavis de 2 mois. Les évolutions sont priorisées conjointement lors d'un **comité de pilotage trimestriel**.
+
+> *Les montants ci-dessus sont donnés à titre d'hypothèse pédagogique et n'engagent aucune partie.*
 
 ---
 
