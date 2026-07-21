@@ -16,6 +16,10 @@ import org.junit.platform.suite.api.SuiteDisplayName;
     ConsulterCreateDtoUnitTest.class,
     ExercerCreateDtoUnitTest.class,
     LogActiviteCreateDtoUnitTest.class,
+    // Objets de requête et de réponse restants
+    RegisterRequestUnitTest.class,
+    AuthRequestDtoUnitTest.class,
+    ReponseDtoUnitTest.class,
     // Sécurité : émission et vérification des jetons, chargement des comptes
     JwtUtilsUnitTest.class,
     JwtAuthenticationFilterUnitTest.class,
