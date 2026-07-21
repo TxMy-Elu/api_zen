@@ -1,8 +1,19 @@
 # ── Stack Monitoring — optionnelle ────────────────────────────────────────────
 # Usage dev   : docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d
 # Usage prod  : docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.monitoring.yml up -d
+#
+# Tous les ports de supervision sont liés a 127.0.0.1 : consultables en local
+# ou via un tunnel SSH, jamais joignables depuis Internet. Seul Nginx expose
+# des ports sur l'interface publique.
 
 services:
+
+  # ── Base de données — provisionnement du compte de supervision ─────────────
+  db:
+    environment:
+      MYSQL_EXPORTER_PASSWORD: ${MYSQL_EXPORTER_PASSWORD}
+    volumes:
+      - ./docker/mysql/02-exporter-user.sh:/docker-entrypoint-initdb.d/02-exporter-user.sh:ro
 
   # ── Prometheus — collecte métriques ────────────────────────────────────────
   prometheus:
@@ -10,7 +21,7 @@ services:
     container_name: cesizen_prometheus
     restart: unless-stopped
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
@@ -27,7 +38,7 @@ services:
     container_name: cesizen_grafana
     restart: unless-stopped
     ports:
-      - "3001:3000"
+      - "127.0.0.1:3001:3000"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
@@ -48,7 +59,7 @@ services:
     container_name: cesizen_loki
     restart: unless-stopped
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     volumes:
       - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
       - loki-data:/loki
@@ -77,7 +88,7 @@ services:
     container_name: cesizen_node_exporter
     restart: unless-stopped
     ports:
-      - "9100:9100"
+      - "127.0.0.1:9100:9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -95,11 +106,12 @@ services:
     container_name: cesizen_mysqld_exporter
     restart: unless-stopped
     ports:
-      - "9104:9104"
+      - "127.0.0.1:9104:9104"
     environment:
-      MYSQLD_EXPORTER_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      # Compte dédié en lecture seule, créé par docker/mysql/02-exporter-user.sh.
+      MYSQLD_EXPORTER_PASSWORD: ${MYSQL_EXPORTER_PASSWORD}
     command:
-      - '--mysqld.username=root'
+      - '--mysqld.username=exporter'
       - '--mysqld.address=db:3306'
     depends_on:
       db:

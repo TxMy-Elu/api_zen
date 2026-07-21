@@ -7,6 +7,7 @@ import org.junit.platform.suite.api.SuiteDisplayName;
 @Suite
 @SuiteDisplayName("API Zen - Suite de Tests Unitaires Complète")
 @SelectClasses({
+    // Validation des objets de transfert
     UserCreateDtoUnitTest.class,
     UserUpdateDtoUnitTest.class,
     CategorieCreateDtoUnitTest.class,
@@ -14,7 +15,16 @@ import org.junit.platform.suite.api.SuiteDisplayName;
     ArticleCreateDtoUnitTest.class,
     ConsulterCreateDtoUnitTest.class,
     ExercerCreateDtoUnitTest.class,
-    LogActiviteCreateDtoUnitTest.class
+    LogActiviteCreateDtoUnitTest.class,
+    // Objets de requête et de réponse restants
+    RegisterRequestUnitTest.class,
+    AuthRequestDtoUnitTest.class,
+    ReponseDtoUnitTest.class,
+    // Sécurité : émission et vérification des jetons, chargement des comptes
+    JwtUtilsUnitTest.class,
+    JwtAuthenticationFilterUnitTest.class,
+    CustomUserDetailsServiceUnitTest.class,
+    RateLimitFilterUnitTest.class
 })
 public class ApiZenTestSuite {
 
