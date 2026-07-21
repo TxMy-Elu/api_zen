@@ -61,7 +61,7 @@ La veille s'appuie sur des sources officielles et des bases de vulnérabilités,
 
 **Impact sur CESIZen.** Le front s'appuie sur le routage pour protéger l'espace d'administration. Le scan de la CI web a remonté **huit vulnérabilités HIGH** dans Next.js ; le step Trivy bloquant aurait fait échouer toute livraison.
 
-**Action prise.** Montée de Next.js en `16.2.10` (et de l'outillage : eslint-config-next, postcss), build et tests revérifiés. Les huit CVE HIGH ont disparu. Une CVE moderate résiduelle (postcss du toolchain interne de Next) subsiste sous le seuil bloquant, suivie en issue. Cet épisode illustre la valeur d'un scan de dépendances **bloquant** en CI.
+**Action prise.** Montée de Next.js en `16.2.10` (et de l'outillage : eslint-config-next, postcss), build et tests revérifiés. Les huit CVE HIGH ont disparu. Une CVE moderate résiduelle (postcss du toolchain interne de Next) subsiste sous le seuil bloquant, sous surveillance. Cet épisode illustre la valeur d'un scan de dépendances **bloquant** en CI.
 
 ---
 

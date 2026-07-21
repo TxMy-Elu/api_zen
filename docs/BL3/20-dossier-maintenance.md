@@ -46,7 +46,7 @@ Organisation de la maintenance de la plateforme : supervision, gestion des ticke
 
 ## 5. Veille technologique
 
-Sources ciblées : **spring.io/blog** et GitHub Releases (backend), **nextjs.org/blog** et changelog Vercel (front), **flutter.dev** et pub.dev (mobile), et pour la sécurité **OWASP**, **CVE Mitre** et la base d'avis GitHub. Le suivi passe par le Watch des dépôts critiques et par Dependabot, qui matérialise les nouvelles versions. → Trois fiches détaillées : [21-veille-technologique.md](21-veille-technologique.md).
+Sources ciblées : **spring.io/blog** et GitHub Releases (backend), **nextjs.org/blog** et changelog Vercel (front), **flutter.dev** et pub.dev (mobile), et pour la sécurité **OWASP**, **CVE Mitre** et la base d'avis GitHub. Le suivi passe par le Watch des dépôts critiques et par Dependabot, qui matérialise les nouvelles versions.
 
 ---
 

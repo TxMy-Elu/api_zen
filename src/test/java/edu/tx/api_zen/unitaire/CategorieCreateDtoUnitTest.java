@@ -1,6 +1,7 @@
 package edu.tx.api_zen.unitaire;
 
 import edu.tx.api_zen.dto.CategorieCreateDto;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -41,7 +42,7 @@ public class CategorieCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("libelle")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotBlank")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotBlank));
     }
 
     @Test

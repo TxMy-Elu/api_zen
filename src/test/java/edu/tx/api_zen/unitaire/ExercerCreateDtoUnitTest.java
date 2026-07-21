@@ -1,6 +1,7 @@
 package edu.tx.api_zen.unitaire;
 
 import edu.tx.api_zen.dto.ExercerCreateDto;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -53,7 +54,7 @@ public class ExercerCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("userId")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotNull")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotNull));
     }
 
     @Test
@@ -65,7 +66,7 @@ public class ExercerCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("exerciceId")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotNull")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotNull));
     }
 
     @Test

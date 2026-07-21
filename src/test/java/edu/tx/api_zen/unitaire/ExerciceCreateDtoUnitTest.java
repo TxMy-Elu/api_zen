@@ -1,6 +1,8 @@
 package edu.tx.api_zen.unitaire;
 
 import edu.tx.api_zen.dto.ExerciceCreateDto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -48,7 +50,7 @@ public class ExerciceCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("nom")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotBlank")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotBlank));
     }
 
     @Test
@@ -63,7 +65,7 @@ public class ExerciceCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("dureeInspiration")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotNull")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotNull));
     }
 
     @Test
@@ -78,7 +80,7 @@ public class ExerciceCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("dureeApnee")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotNull")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotNull));
     }
 
     @Test
@@ -93,7 +95,7 @@ public class ExerciceCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("dureeExpiration")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotNull")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotNull));
     }
 
     @Test

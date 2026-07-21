@@ -28,6 +28,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    // CSRF volontairement désactivé : l'API est strictement stateless et
+    // s'authentifie par jeton JWT porté dans l'en-tête Authorization, jamais
+    // par cookie de session (SessionCreationPolicy.STATELESS ci-dessous).
+    // Sans cookie d'authentification, un navigateur ne peut pas rejouer d'appel
+    // authentifié depuis un site tiers : la classe d'attaque CSRF ne s'applique
+    // pas ici. Réactiver CSRF deviendrait nécessaire si l'on passait un jour à
+    // une authentification par cookie.
+    @SuppressWarnings("java:S4502")
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

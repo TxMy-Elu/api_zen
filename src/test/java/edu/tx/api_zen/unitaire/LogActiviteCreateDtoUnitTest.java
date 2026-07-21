@@ -1,6 +1,7 @@
 package edu.tx.api_zen.unitaire;
 
 import edu.tx.api_zen.dto.LogActiviteCreateDto;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -41,7 +42,7 @@ public class LogActiviteCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("typeAction")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotBlank")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotBlank));
     }
 
     @Test
@@ -53,7 +54,7 @@ public class LogActiviteCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("tableConcernee")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotBlank")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotBlank));
     }
 
     @Test

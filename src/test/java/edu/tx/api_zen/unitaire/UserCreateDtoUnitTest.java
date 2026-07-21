@@ -1,6 +1,8 @@
 package edu.tx.api_zen.unitaire;
 
 import edu.tx.api_zen.dto.UserCreateDto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -47,7 +49,7 @@ public class UserCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("nom")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotBlank")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotBlank));
     }
 
     @Test
@@ -62,7 +64,7 @@ public class UserCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("prenom")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotBlank")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotBlank));
     }
 
     @Test
@@ -77,7 +79,7 @@ public class UserCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("email")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotBlank")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotBlank));
     }
 
     @Test
@@ -92,7 +94,7 @@ public class UserCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("password")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotBlank")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotBlank));
     }
 
     @Test
@@ -107,7 +109,7 @@ public class UserCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("roleId")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotNull")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotNull));
     }
 
     @Test

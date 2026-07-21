@@ -156,8 +156,8 @@ Les jetons `SONAR_TOKEN`, `SONAR_ORGANIZATION` et `SONAR_PROJECT_KEY` sont stock
 ### 8.2 Front — Next.js
 
 - **En-têtes de sécurité.** Configurés dans `next.config.ts` : six en-têtes, dont une CSP construite dynamiquement à partir des origines autorisées (API et Supabase uniquement). HSTS émis uniquement en production.
-- **CSP — compromis assumé.** La politique autorise `'unsafe-inline'` sur script/style (le App Router de Next injecte des scripts/styles inline). La solution propre (nonce par requête) est identifiée (issue #9) mais hors périmètre immédiat.
-- **CVE corrigée.** Next.js 16.2.2 portait des CVE HIGH (contournement de middleware), détectées par le scan CI. Corrigées par montée en 16.2.10. Reste une CVE moderate (postcss du toolchain Next), sous le seuil bloquant, tracée (issue #13).
+- **CSP — compromis assumé.** La politique autorise `'unsafe-inline'` sur script/style (le App Router de Next injecte des scripts/styles inline). La solution propre — un nonce par requête généré via un middleware — constitue une évolution recommandée.
+- **CVE corrigée.** Next.js 16.2.2 portait des CVE HIGH (contournement de middleware), détectées par le scan CI. Corrigées par montée en 16.2.10. Reste une CVE moderate (postcss du toolchain Next), sous le seuil bloquant, sous surveillance.
 
 ### 8.3 Mobile — Flutter
 
@@ -241,10 +241,10 @@ En cas de violation de données à caractère personnel, notification à la **CN
 | Consentement RGPD non tracé (données de santé) | **Élevée** | Ajouter un champ de consentement horodaté à l'inscription |
 | Aucune purge automatique des journaux | Moyenne | Tâche planifiée de suppression à 90 jours |
 | Droit à la portabilité non implémenté | Moyenne | Endpoint d'export JSON des données utilisateur |
-| CSP avec `'unsafe-inline'` (front) | Moyenne | Passer aux nonces (issue #9) |
+| CSP avec `'unsafe-inline'` (front) | Moyenne | Passer aux nonces |
 | Upload sans validation MIME réelle | Moyenne | Vérifier les magic bytes côté serveur |
 | Rate limiting en mémoire | Faible | Migrer vers bucket4j-redis si haute disponibilité |
-| CVE moderate postcss (toolchain Next) | Faible | Surveiller les releases Next.js (issue #13) |
+| CVE moderate postcss (toolchain Next) | Faible | Surveiller les releases Next.js |
 | Mot de passe de démo public (mobile) | Faible | Vérifier qu'aucun compte prod ne l'utilise |
 | Secret JWT dans l'historique git | Faible | Rotation effectuée (ancien secret inopérant) |
 | Grafana en prod : mot de passe par défaut | Moyenne | Changer `GRAFANA_ADMIN_PASSWORD` ; exposer via tunnel SSH uniquement |
@@ -255,4 +255,4 @@ En cas de violation de données à caractère personnel, notification à la **CN
 
 La plateforme applique une défense en profondeur cohérente sur ses trois composants : authentification robuste, limitation de débit, en-têtes de sécurité, moindre privilège (conteneur non-root, utilisateur MySQL sans droits DDL, un seul port public), et une chaîne de livraison qui détecte automatiquement CVE et secrets.
 
-Les écarts les plus significatifs concernent la **conformité RGPD** — traçabilité du consentement pour des données de santé, purge des journaux, portabilité — et sont hiérarchisés en tête des risques résiduels. L'ensemble des points ouverts est tracé sous forme d'issues GitHub, garantissant leur suivi dans la durée.
+Les écarts les plus significatifs concernent la **conformité RGPD** — traçabilité du consentement pour des données de santé, purge des journaux, portabilité — et sont hiérarchisés en tête des risques résiduels. L'ensemble des points ouverts est recensé dans le tableau des risques résiduels ci-dessus, garantissant leur suivi dans la durée.
