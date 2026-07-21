@@ -41,7 +41,8 @@ services:
     networks:
       - cesizen-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      # wget est fourni par busybox dans l'image Alpine ; curl n'y est pas installé.
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
