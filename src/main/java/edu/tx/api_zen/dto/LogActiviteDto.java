@@ -16,7 +16,8 @@ public class LogActiviteDto {
     private Integer idEnregistrement;
     @Schema(example = "Mise a jour du profil utilisateur")
     private String details;
-    @Schema(example = "10.0.0.12")
+    // RFC 5737 : plage réservée à la documentation, jamais routable
+    @Schema(example = "203.0.113.12")
     private String adresseIp;
     @Schema(example = "1")
     private Integer idUtilisateur;

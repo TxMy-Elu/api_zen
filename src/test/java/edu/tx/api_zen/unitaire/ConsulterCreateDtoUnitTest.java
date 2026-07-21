@@ -1,6 +1,7 @@
 package edu.tx.api_zen.unitaire;
 
 import edu.tx.api_zen.dto.ConsulterCreateDto;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -41,7 +42,7 @@ public class ConsulterCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("idUtilisateur")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotNull")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotNull));
     }
 
     @Test
@@ -53,7 +54,7 @@ public class ConsulterCreateDtoUnitTest {
 
         Assertions.assertTrue(contraintes.stream()
                 .anyMatch(c -> c.getPropertyPath().toString().equals("idArticle")
-                        && c.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName().equals("NotNull")));
+                        && c.getConstraintDescriptor().getAnnotation() instanceof NotNull));
     }
 
     @Test

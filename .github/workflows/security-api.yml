@@ -9,10 +9,10 @@ on:
     # Scan automatique chaque nuit à 2h UTC
     - cron: "0 2 * * *"
 
+# Moindre privilège : aucune permission d'écriture au niveau workflow.
+# security-events: write est accordé uniquement aux jobs qui publient un SARIF.
 permissions:
   contents: read
-  security-events: write   # requis pour upload-sarif (Trivy → GitHub Security tab)
-  actions: read
 
 jobs:
 
@@ -20,6 +20,10 @@ jobs:
   trivy-image:
     name: Trivy — Docker image CVE scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # requis pour upload-sarif (→ onglet Security)
+      actions: read
 
     steps:
       - name: Checkout
@@ -29,7 +33,7 @@ jobs:
         run: docker build -t cesizen-api:scan .
 
       - name: Trivy scan — CRITICAL & HIGH (bloquant)
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: cesizen-api:scan
           format: table
@@ -38,7 +42,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Trivy scan — SARIF (GitHub Security tab)
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         if: always()
         with:
           image-ref: cesizen-api:scan
@@ -57,13 +61,17 @@ jobs:
   trivy-code:
     name: Trivy — Code & secrets scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -83,6 +91,10 @@ jobs:
   gitleaks:
     name: Gitleaks — Secret detection
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
 
     steps:
       - name: Checkout
@@ -91,7 +103,7 @@ jobs:
           fetch-depth: 0
 
       - name: Gitleaks scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_REPORT_FORMAT: sarif
@@ -107,6 +119,8 @@ jobs:
   owasp-dependency-check:
     name: OWASP Dependency Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read           # ce job ne publie qu'un artefact, pas de SARIF
     # NVD = téléchargement lourd (5-15 min) — Trivy couvre les CVE sur chaque PR
     if: github.event_name == 'schedule' || github.ref == 'refs/heads/main'
 
@@ -133,7 +147,7 @@ jobs:
 
       - name: OWASP Dependency Check
         # Seuls tags publiés par l'action : 1.0.0 et 1.1.0
-        uses: dependency-check/Dependency-Check_Action@1.1.0
+        uses: dependency-check/Dependency-Check_Action@75ba02d6183445fe0761d26e836bde58b1560600 # 1.1.0
         env:
           # L'action tourne dans un conteneur, mais GitHub y injecte le JAVA_HOME
           # du runner hôte (posé par setup-java) — chemin inexistant dedans.

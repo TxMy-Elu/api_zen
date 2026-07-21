@@ -19,8 +19,8 @@ public class ResetPasswordRequest {
 
     @NotBlank(message = "Le mot de passe est requis")
     @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
-    @Pattern(regexp = ".*[0-9].*", message = "Le mot de passe doit contenir au moins un chiffre")
-    @Pattern(regexp = ".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*", message = "Le mot de passe doit contenir au moins un caractère spécial")
+    @Pattern(regexp = "[^0-9]*[0-9].*", message = "Le mot de passe doit contenir au moins un chiffre")
+    @Pattern(regexp = "[^!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*", message = "Le mot de passe doit contenir au moins un caractère spécial")
     @Schema(example = "NouveauMotDePasse123!")
     private String newPassword;
 }

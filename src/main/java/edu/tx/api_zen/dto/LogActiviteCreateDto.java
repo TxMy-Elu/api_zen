@@ -17,7 +17,8 @@ public class LogActiviteCreateDto {
     private Integer idEnregistrement;
     @Schema(example = "Creation d'un nouvel article")
     private String details;
-    @Schema(example = "192.168.1.100")
+    // RFC 5737 : plage réservée à la documentation, jamais routable
+    @Schema(example = "203.0.113.100")
     private String adresseIp;
     @Schema(example = "1")
     private Integer idUtilisateur;
