@@ -252,8 +252,8 @@
       "gridPos": { "x": 8, "y": 40, "w": 8, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "targets": [
-        { "expr": "histogram_quantile(0.95, sum(rate(hikaricp_connection_acquired_nanos_bucket{application=\"api_zen\"}[1m])) by (le)) / 1e6", "legendFormat": "Acquisition p95" },
-        { "expr": "histogram_quantile(0.99, sum(rate(hikaricp_connection_acquired_nanos_bucket{application=\"api_zen\"}[1m])) by (le)) / 1e6", "legendFormat": "Acquisition p99" }
+        { "expr": "rate(hikaricp_connections_acquire_seconds_sum{application=\"api_zen\"}[1m]) / rate(hikaricp_connections_acquire_seconds_count{application=\"api_zen\"}[1m]) * 1000", "legendFormat": "Acquisition moyenne" },
+        { "expr": "hikaricp_connections_acquire_seconds_max{application=\"api_zen\"} * 1000", "legendFormat": "Acquisition max" }
       ],
       "fieldConfig": { "defaults": { "unit": "ms", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
     },
@@ -308,7 +308,7 @@
       "id": 24, "title": "Disque — Utilisation (%)", "type": "bargauge",
       "gridPos": { "x": 0, "y": 57, "w": 8, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "targets": [{ "expr": "100 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\"} * 100)", "legendFormat": "{{mountpoint}}", "instant": true }],
+      "targets": [{ "expr": "100 - (node_filesystem_avail_bytes{mountpoint!~\"/(sys|proc|dev|run|host).*\"} / node_filesystem_size_bytes{mountpoint!~\"/(sys|proc|dev|run|host).*\"} * 100)", "legendFormat": "{{mountpoint}}", "instant": true }],
       "options": { "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"] }, "displayMode": "gradient" },
       "fieldConfig": {
         "defaults": {
@@ -380,10 +380,10 @@
       "gridPos": { "x": 0, "y": 74, "w": 8, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "targets": [
-        { "expr": "rate(mysql_global_status_innodb_rows_read[1m])", "legendFormat": "Lues/s" },
-        { "expr": "rate(mysql_global_status_innodb_rows_inserted[1m])", "legendFormat": "Insérées/s" },
-        { "expr": "rate(mysql_global_status_innodb_rows_updated[1m])", "legendFormat": "Mises à jour/s" },
-        { "expr": "rate(mysql_global_status_innodb_rows_deleted[1m])", "legendFormat": "Supprimées/s" }
+        { "expr": "rate(mysql_global_status_innodb_row_ops_total{operation=\"read\"}[1m])", "legendFormat": "Lues/s" },
+        { "expr": "rate(mysql_global_status_innodb_row_ops_total{operation=\"inserted\"}[1m])", "legendFormat": "Insérées/s" },
+        { "expr": "rate(mysql_global_status_innodb_row_ops_total{operation=\"updated\"}[1m])", "legendFormat": "Mises à jour/s" },
+        { "expr": "rate(mysql_global_status_innodb_row_ops_total{operation=\"deleted\"}[1m])", "legendFormat": "Supprimées/s" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 }, "color": { "mode": "palette-classic" } } }
     },
